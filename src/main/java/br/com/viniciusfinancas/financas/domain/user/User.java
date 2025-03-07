@@ -1,11 +1,10 @@
 package br.com.viniciusfinancas.financas.domain.user;
 
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name = "usuario", schema = "public")
@@ -14,7 +13,7 @@ import lombok.Setter;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     @Column(name = "name",length = 255, nullable = false)
     private String name;
     @Column(name = "email",length = 255, nullable = false)
@@ -22,12 +21,17 @@ public class User {
     @Column(name = "password",length = 255, nullable = false)
     private String password;
 
+    @OneToMany(mappedBy = "usuario")  // Relacionamento com a entidade Receita
+    private List<Receita> receitas;
+    @OneToMany(mappedBy = "usuario")
+    private List<Despesa> despesas;
 
-    public Integer getId() {
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
