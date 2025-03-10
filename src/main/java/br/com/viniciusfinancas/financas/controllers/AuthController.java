@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping(value = "/auth")
 public class AuthController {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
@@ -32,7 +32,7 @@ public class AuthController {
         User user = this.repository.findByEmail(body.email()).orElseThrow(() -> new RuntimeException("User not found"));
         if(passwordEncoder.matches(body.password(), user.getPassword())) {
             String token = this.tokenService.generateToken(user);
-            return ResponseEntity.ok(new ResponseDTO(user.getName(), token));
+            return ResponseEntity.ok(new ResponseDTO(user.getId(), token));
         }
         return ResponseEntity.badRequest().build();
     }
@@ -55,7 +55,7 @@ public class AuthController {
             String token = this.tokenService.generateToken(newUser);
 
             // Retornar a resposta com os dados do usuário e o token
-            return ResponseEntity.ok(new ResponseDTO(newUser.getName(), token));
+            return ResponseEntity.ok(new ResponseDTO(newUser.getId(), token));
         }
 
         // Retornar erro caso o email já esteja em uso

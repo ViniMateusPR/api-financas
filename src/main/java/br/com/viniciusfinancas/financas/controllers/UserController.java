@@ -18,10 +18,11 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping(value = "/user")
 public class UserController {
 
     private final UserRepository repository;
@@ -48,13 +49,13 @@ public class UserController {
     @PostMapping("/enviarDespesa")
     public ResponseEntity<String> addDespesa(@RequestBody DespesaDTO despesaDTO) {
         // Verificação se o campo userId foi enviado
-        if (despesaDTO.userId() == null) {
+        if (despesaDTO.usuarioId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("O campo userId é obrigatório.");
+                    .body("O campo usuarioId é obrigatório.");
         }
 
         // Buscar o usuário pelo ID
-        Optional<User> usuarioOptional = repository.findById(Long.valueOf(despesaDTO.userId()));
+        Optional<User> usuarioOptional = repository.findById(despesaDTO.usuarioId());  // Altere para usuarioId
         if (usuarioOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Usuário não encontrado.");
@@ -96,7 +97,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Despesa criada com sucesso. Data: " + dataFormatada);
     }
-
 
     // Endpoint para enviar uma nova receita
     @PostMapping("/enviarReceita")
@@ -140,13 +140,31 @@ public class UserController {
                 .body("Receita criada com sucesso. Data: " + dataFormatada);
     }
 
+    @GetMapping("/listarDespesas")
+    public List<Despesa> listarDespesas(@RequestParam("userId") Long userId) {
+        return despesaRepository.findByUsuarioId(userId);
+    }
 
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ResponseEntity<User> findByAll(@PathVariable Long id){
         User user = userService.procurarPorId(id);
         return ResponseEntity.ok().body(user);
     }
+
+    // Endpoint para buscar um usuário pelo email
+    @GetMapping("/email/{email}")
+    public ResponseEntity<User> getUserByEmail(@PathVariable("email") String email) {
+        Optional<User> userOptional = repository.findByEmail(email);
+
+        if (userOptional.isPresent()) {
+            return ResponseEntity.ok(userOptional.get()); // Retorna o usuário encontrado
+        } else {
+            return ResponseEntity.notFound().build(); // Retorna 404 caso não encontre o usuário
+        }
+    }
+
+
 
 
 }

@@ -1,6 +1,7 @@
 package br.com.viniciusfinancas.financas.domain.user;
 
 import br.com.viniciusfinancas.financas.enumPackage.DespesaStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
