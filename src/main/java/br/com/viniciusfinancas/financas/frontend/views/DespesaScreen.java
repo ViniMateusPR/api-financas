@@ -31,12 +31,14 @@ public class DespesaScreen extends JFrame {
         // Criando os botões
         JButton adicionarButton = new JButton("Adicionar Despesa");
         JButton verButton = new JButton("Ver Despesas");
+        JButton voltarButton = new JButton("Voltar ao Dashboard");  // Botão de voltar
 
         // Painel para os botões
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(1, 2)); // Alinha os botões na horizontal
+        buttonPanel.setLayout(new GridLayout(1, 3)); // Alinha os botões na horizontal
         buttonPanel.add(adicionarButton);
         buttonPanel.add(verButton);
+        buttonPanel.add(voltarButton);  // Adicionando o botão de voltar
 
         add(buttonPanel, BorderLayout.CENTER);
 
@@ -55,6 +57,17 @@ public class DespesaScreen extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // Exibe a lista de despesas
                 exibirDespesas();
+            }
+        });
+
+        // Ação ao clicar no botão "Voltar ao Dashboard"
+        voltarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Fecha a tela de despesa e abre o dashboard
+                dispose();
+                // Aqui você pode chamar a tela do Dashboard, por exemplo:
+                new Dashboard();  // Supondo que você tenha uma classe DashboardScreen
             }
         });
 
@@ -266,7 +279,4 @@ public class DespesaScreen extends JFrame {
             JOptionPane.showMessageDialog(this, "Erro ao fazer a requisição. Confira o console para detalhes.");
         }
     }
-
-
-
 }
