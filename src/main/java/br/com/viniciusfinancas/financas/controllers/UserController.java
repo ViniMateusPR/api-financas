@@ -6,6 +6,8 @@ import br.com.viniciusfinancas.financas.domain.user.User;
 import br.com.viniciusfinancas.financas.dto.DespesaDTO;
 import br.com.viniciusfinancas.financas.dto.ReceitaDTO;
 import br.com.viniciusfinancas.financas.enumPackage.DespesaStatus;
+import br.com.viniciusfinancas.financas.enumPackage.ReceitaStatus;
+import br.com.viniciusfinancas.financas.frontend.views.ReceitaScreen;
 import br.com.viniciusfinancas.financas.repositories.DespesaRepository;
 import br.com.viniciusfinancas.financas.repositories.ReceitaRepository;
 import br.com.viniciusfinancas.financas.repositories.UserRepository;
@@ -102,13 +104,13 @@ public class UserController {
     @PostMapping("/enviarReceita")
     public ResponseEntity<String> addReceita(@RequestBody ReceitaDTO receitaDTO) {
         // Verificar se o campo userId não é nulo
-        if (receitaDTO.userId() == null) {
+        if (receitaDTO.usuarioId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("O campo userId é obrigatório.");
         }
 
         // Buscar o usuário pelo ID
-        Optional<User> usuarioOptional = repository.findById(Long.valueOf(receitaDTO.userId()));
+        Optional<User> usuarioOptional = repository.findById(Long.valueOf(receitaDTO.usuarioId()));
 
         if (usuarioOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -127,6 +129,11 @@ public class UserController {
         Instant now = Instant.now();
         receita.setData(now);
 
+        // Caso tenha um status vindo do DTO, podemos setá-lo, caso contrário, o padrão será PENDENTE
+        if (receitaDTO.status() != null) {
+            receita.setStatus(ReceitaStatus.valorDoDescricao(receitaDTO.status()));  // Converte o status pela descrição
+        }
+
         // Salvar a receita no banco de dados
         receitaRepository.save(receita);
 
@@ -140,9 +147,15 @@ public class UserController {
                 .body("Receita criada com sucesso. Data: " + dataFormatada);
     }
 
+
     @GetMapping("/listarDespesas")
     public List<Despesa> listarDespesas(@RequestParam("userId") Long userId) {
         return despesaRepository.findByUsuarioId(userId);
+    }
+
+    @GetMapping("/listarReceitas")
+    public List<Receita> listarReceitas(@RequestParam("userId") Long userId){
+        return receitaRepository.findReceitasByUsuarioId(userId);
     }
 
 
@@ -164,7 +177,46 @@ public class UserController {
         }
     }
 
+    @PutMapping("/editarReceitas/{id}")
+    public ResponseEntity<Receita> editarReceita(@PathVariable Long id, @RequestBody Receita receitaAtualizada) {
+        // Log dos dados recebidos
+        System.out.println("ID da receita recebida: " + id);
+        System.out.println("Dados da receita recebida: " + receitaAtualizada);
 
+        // Verifica se a receita existe
+        Receita receitaExistente = receitaRepository.findById(id)
+                .orElse(null); // Se não encontrar, retorna null
+
+        if (receitaExistente == null) {
+            // Se não encontrar a receita, retorna Not Found
+            return ResponseEntity.notFound().build();
+        }
+
+        // Se a receita for encontrada, atualiza os dados
+        receitaExistente.setTitulo(receitaAtualizada.getTitulo());
+        receitaExistente.setValor(receitaAtualizada.getValor());
+        receitaExistente.setStatus(receitaAtualizada.getStatus());  // Certifique-se que o campo 'status' está sendo mapeado
+
+        // Salva a receita atualizada no banco de dados
+        Receita receitaSalva = receitaRepository.save(receitaExistente);
+
+        // Log dos dados após a atualização
+        System.out.println("Receita salva: " + receitaSalva);
+
+        // Retorna a receita atualizada
+        return ResponseEntity.ok(receitaSalva);
+    }
+
+    @DeleteMapping("/deletarReceita/{id}")
+    public ResponseEntity<String> deletarReceita(@PathVariable Long id) {
+        try {
+            receitaRepository.deleteById(id);
+            return ResponseEntity.ok("Receita excluída com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Receita não encontrada ou erro ao excluir.");
+        }
+    }
 
 
 }

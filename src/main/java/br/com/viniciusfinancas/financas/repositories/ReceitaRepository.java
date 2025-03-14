@@ -1,5 +1,6 @@
 package br.com.viniciusfinancas.financas.repositories;
 
+import br.com.viniciusfinancas.financas.domain.user.Despesa;
 import br.com.viniciusfinancas.financas.domain.user.Receita;
 import br.com.viniciusfinancas.financas.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,13 @@ import java.util.Optional;
 public interface ReceitaRepository extends JpaRepository<Receita, Long> {
 
   //  List<Receita> findByUser(User usuario);
+
+  Optional<Receita> findById(Long id);
+
+
+  void deleteById(Long id);
+
+  List<Receita> findByUsuarioId(Long userId);
 
     @Query("SELECT r FROM Receita r WHERE r.usuario.email = :email")
     List<Receita> findByEmail(@Param("email") String email);

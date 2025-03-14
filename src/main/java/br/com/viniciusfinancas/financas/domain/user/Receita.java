@@ -1,5 +1,7 @@
 package br.com.viniciusfinancas.financas.domain.user;
 
+import br.com.viniciusfinancas.financas.enumPackage.DespesaStatus;
+import br.com.viniciusfinancas.financas.enumPackage.ReceitaStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -29,7 +31,18 @@ public class Receita {
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", nullable = false)  // Chave estrangeira
     private User usuario;  // Relacionando a chave estrangeira com a tabela de usuário
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private ReceitaStatus status = ReceitaStatus.PENDENTE;
     // Getters e Setters
+
+    public ReceitaStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReceitaStatus status) {
+        this.status = status;
+    }
 
     public Long getId() {
         return id;
@@ -77,8 +90,9 @@ public class Receita {
                 "id=" + id +
                 ", titulo='" + titulo + '\'' +
                 ", valor=" + valor +
-                ", data='" + data + '\'' +
+                ", data=" + data +
                 ", usuario=" + usuario +
+                ", status=" + status +
                 '}';
     }
 }
