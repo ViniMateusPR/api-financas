@@ -189,8 +189,8 @@ public class ReceitaScreen extends JFrame {
                     data[i][1] = receitas[i].getTitulo();
                     data[i][2] = receitas[i].getValor();
                     data[i][3] = receitas[i].getData().toString();
-                    data[i][4] = Objects.toString(receitas[i].getStatus(), "N/A");
-                    data[i][5] = (receitas[i].getUsuario() != null) ? receitas[i].getUsuario().getName() : "Desconhecido";
+                    data[i][4] = receitas[i].getStatus().getDescricao();
+                    data[i][5] = receitas[i].getUsuario().getName();
                     // Cria um botão de edição com o ícone de lápis
                     data[i][6] = new JButton(new ImageIcon("C:/Users/vinic/OneDrive/Importante/pencil.png"));
                 }
@@ -433,23 +433,41 @@ public class ReceitaScreen extends JFrame {
 
     private void excluirReceita(Long receitaId) {
         try {
-            URL url = new URL("http://localhost:8080/user/deletarReceita/" + receitaId); // URL do seu endpoint
+            // Criação da URL do endpoint
+            URL url = new URL("http://localhost:8080/user/deletarReceita/" + receitaId);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Configuração do método HTTP DELETE
             connection.setRequestMethod("DELETE");
             connection.setDoOutput(true);
 
+            // Adicionando o cabeçalho de autorização com o token JWT
+            String token = TokenStorage.getToken(); // Pegando o token armazenado
+            connection.setRequestProperty("Authorization", "Bearer " + token);
+
+            // Enviar a requisição e obter o código de resposta
             int responseCode = connection.getResponseCode();
+
+            // Verifica se a resposta foi bem-sucedida (HTTP_OK)
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 JOptionPane.showMessageDialog(null, "Receita excluída com sucesso!");
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                JOptionPane.showMessageDialog(null, "Receita não encontrada.");
+            } else if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
+                JOptionPane.showMessageDialog(null, "Você não tem permissão para excluir esta receita.");
             } else {
-                JOptionPane.showMessageDialog(null, "Erro ao excluir receita.");
+                // Para outros códigos de erro, mostre uma mensagem genérica
+                JOptionPane.showMessageDialog(null, "Erro ao excluir receita. Código de erro: " + responseCode);
             }
+
+            // Fechar a conexão após a requisição
+            connection.disconnect();
+
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Erro na comunicação com o servidor.");
         }
     }
-
 
 
 }

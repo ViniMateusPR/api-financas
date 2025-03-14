@@ -28,7 +28,7 @@ public class Dashboard extends JFrame {
         setLayout(new BorderLayout());
 
         // Adicionando a label de boas-vindas
-        JLabel welcomeLabel = new JLabel("Bem-vindo ao seu Dashboard!", SwingConstants.CENTER);
+        JLabel welcomeLabel = new JLabel("Bem-vindo ao seu Dashboard!" , SwingConstants.CENTER);
         welcomeLabel.setFont(new Font("Arial", Font.PLAIN, 24));
         add(welcomeLabel, BorderLayout.NORTH);
 

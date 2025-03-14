@@ -18,7 +18,9 @@ public class FinanceService {
 
     // Método para buscar a soma das despesas
     public double getTotalDespesas(Long userId) {
-        String sql = "SELECT SUM(valor) FROM despesa WHERE usuario_id = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{userId}, Double.class);
+        String sql = "SELECT SUM(valor) FROM despesa WHERE usuario_id = ? AND status <> 'PAGA'";
+        Double total = jdbcTemplate.queryForObject(sql, new Object[]{userId}, Double.class);
+        return total != null ? total : 0.0; // Evita erro se não houver despesas
     }
+
 }

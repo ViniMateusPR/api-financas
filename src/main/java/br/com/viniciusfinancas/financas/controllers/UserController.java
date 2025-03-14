@@ -7,10 +7,10 @@ import br.com.viniciusfinancas.financas.dto.DespesaDTO;
 import br.com.viniciusfinancas.financas.dto.ReceitaDTO;
 import br.com.viniciusfinancas.financas.enumPackage.DespesaStatus;
 import br.com.viniciusfinancas.financas.enumPackage.ReceitaStatus;
-import br.com.viniciusfinancas.financas.frontend.views.ReceitaScreen;
 import br.com.viniciusfinancas.financas.repositories.DespesaRepository;
 import br.com.viniciusfinancas.financas.repositories.ReceitaRepository;
 import br.com.viniciusfinancas.financas.repositories.UserRepository;
+import br.com.viniciusfinancas.financas.service.DespesaService;
 import br.com.viniciusfinancas.financas.service.ReceitaService;
 import br.com.viniciusfinancas.financas.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -32,14 +32,16 @@ public class UserController {
     private final ReceitaRepository receitaRepository;
     private final ReceitaService receitaService;
     private final DespesaRepository despesaRepository;
+    private final DespesaService despesaService;
 
     // Construtor do controlador
-    public UserController(UserRepository repository, UserService userService, ReceitaRepository receitaRepository, ReceitaService receitaService, DespesaRepository despesaRepository) {
+    public UserController(UserRepository repository, UserService userService, ReceitaRepository receitaRepository, ReceitaService receitaService, DespesaRepository despesaRepository, DespesaService despesaService) {
         this.repository = repository;
         this.userService = userService;
         this.receitaRepository = receitaRepository;
         this.receitaService = receitaService;
         this.despesaRepository = despesaRepository;
+        this.despesaService = despesaService;
     }
 
     // Endpoint para verificar se o controlador está funcionando
@@ -177,6 +179,24 @@ public class UserController {
         }
     }
 
+    @PutMapping("/editarDespesa/{id}")
+    public ResponseEntity<Despesa> editarDespesa(@PathVariable Long id, @RequestBody Despesa despesaAtualizada){
+        Despesa despesaExistente = despesaRepository.findById(id)
+                .orElse(null);
+        if (despesaExistente == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        despesaExistente.setTitulo(despesaAtualizada.getTitulo());
+        despesaExistente.setValor(despesaAtualizada.getValor());
+        despesaExistente.setStatus(despesaAtualizada.getStatus());
+
+        Despesa despesaSalva = despesaRepository.save(despesaExistente);
+        System.out.println("Despesa salva: "+despesaSalva);
+
+        return ResponseEntity.ok(despesaSalva);
+    }
+
     @PutMapping("/editarReceitas/{id}")
     public ResponseEntity<Receita> editarReceita(@PathVariable Long id, @RequestBody Receita receitaAtualizada) {
         // Log dos dados recebidos
@@ -210,11 +230,35 @@ public class UserController {
     @DeleteMapping("/deletarReceita/{id}")
     public ResponseEntity<String> deletarReceita(@PathVariable Long id) {
         try {
-            receitaRepository.deleteById(id);
-            return ResponseEntity.ok("Receita excluída com sucesso!");
+            boolean isDeleted = receitaService.deleteReceita(id);
+
+            if (isDeleted) {
+                return ResponseEntity.ok("Receita excluída com sucesso!");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Receita não encontrada.");
+            }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Receita não encontrada ou erro ao excluir.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao excluir a receita: " + e.getMessage());
+        }
+    }
+
+
+    @DeleteMapping("/deletarDespesa/{id}")
+    public ResponseEntity<String> deletarDespesa(@PathVariable Long id){
+        try {
+            boolean isDeleted = despesaService.deleteDespesa(id);
+
+            if (isDeleted) {
+                return ResponseEntity.ok("Despesa excluída com sucesso!");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Receita não encontrada.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao excluir a receita: " + e.getMessage());
         }
     }
 

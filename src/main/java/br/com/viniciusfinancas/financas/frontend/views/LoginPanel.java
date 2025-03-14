@@ -99,7 +99,6 @@ public class LoginPanel extends JFrame {
             System.out.println("Token armazenado: " + token);
             System.out.println("ID do usuário: " + userId);
 
-                JOptionPane.showMessageDialog(this, "Login realizado com sucesso!");
                 dispose(); // Fecha a tela de login
                 new Dashboard(); // Abre a tela principal da aplicação
             } else {
