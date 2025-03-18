@@ -12,10 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -33,13 +30,15 @@ public class DespesaScreen extends JFrame {
 
         JButton adicionarButton = new JButton("Adicionar Despesa");
         JButton verButton = new JButton("Ver Despesas");
+        JButton gerarRelatorioButton = new JButton("Gerar Relatório");
         JButton voltarButton = new JButton("Voltar ao Dashboard");
 
         // Painel para os botões
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(1, 3)); // Alinha os botões na horizontal
+        buttonPanel.setLayout(new GridLayout(1, 4)); // Alinha os botões na horizontal
         buttonPanel.add(adicionarButton);
         buttonPanel.add(verButton);
+        buttonPanel.add(gerarRelatorioButton);
         buttonPanel.add(voltarButton);
 
         add(buttonPanel, BorderLayout.CENTER);
@@ -66,6 +65,12 @@ public class DespesaScreen extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 dispose();
                 new Dashboard(); // Chama a tela do Dashboard
+            }
+        });
+        gerarRelatorioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gerarRelatorio(); // Função para gerar o relatório
             }
         });
 
@@ -330,6 +335,47 @@ public class DespesaScreen extends JFrame {
         // Fechar a conexão após a requisição
         conn.disconnect();
     }
+    public void gerarRelatorio() {
+        int userId = TokenStorage.getUserId();
+        String token = TokenStorage.getToken();
+
+        String url = "http://localhost:8080/relatorios/excelDespesa?userId=" + userId;
+        try {
+            URL apiUrl = new URL(url);
+            HttpURLConnection conn = (HttpURLConnection) apiUrl.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                // Lê a resposta como um fluxo de bytes
+                InputStream inputStream = conn.getInputStream();
+                String filePath = "C:\\Users\\vinic\\OneDrive\\Importante\\excelTeste\\relatorio_despesa.xlsx";  // Defina o caminho onde deseja salvar
+
+                // Salva o arquivo no caminho especificado
+                try (FileOutputStream fileOutputStream = new FileOutputStream(filePath)) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        fileOutputStream.write(buffer, 0, bytesRead);
+                    }
+                    inputStream.close();
+                    JOptionPane.showMessageDialog(this, "Relatório gerado com sucesso!");
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(this, "Erro ao salvar o arquivo: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                String errorResponse = br.readLine();
+                JOptionPane.showMessageDialog(this, "Erro ao gerar o relatório: " + errorResponse);
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao fazer a requisição para gerar o relatório.");
+            e.printStackTrace();  // Log da exceção para depuração
+        }
+    }
+
 
 
     class ButtonRenderer extends JPanel implements TableCellRenderer {

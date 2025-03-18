@@ -4,8 +4,8 @@ import br.com.viniciusfinancas.financas.frontend.utils.TokenStorage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.chart.renderer.category.BarRenderer;
 
@@ -46,10 +46,15 @@ public class Dashboard extends JFrame {
         JButton receitaButton = new JButton("Acessar Receitas");
         receitaButton.setFont(new Font("Arial", Font.PLAIN, 18));
 
+        // Criando o botão para gerar o relatório de receita líquida
+        JButton relatorioReceitaLiquidaButton = new JButton("Gerar Relatório");
+        relatorioReceitaLiquidaButton.setFont(new Font("Arial", Font.PLAIN, 18));
+
         // Criando o painel para os botões
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(despesaButton);
         buttonPanel.add(receitaButton); // Adicionando o botão "Acessar Receitas"
+        buttonPanel.add(relatorioReceitaLiquidaButton); // Adicionando o botão para gerar o relatório
 
         add(buttonPanel, BorderLayout.SOUTH);
 
@@ -68,6 +73,9 @@ public class Dashboard extends JFrame {
 
         // Ação do botão "Sair"
         logoutButton.addActionListener(e -> logout());
+
+        // Ação do botão "Gerar Relatório Receita Líquida"
+        relatorioReceitaLiquidaButton.addActionListener(e -> gerarRelatorioReceitaLiquida());
 
         setVisible(true);
     }
@@ -174,6 +182,62 @@ public class Dashboard extends JFrame {
 
         return new ChartPanel(chart);
     }
+
+    // Método para gerar o relatório de receita líquida
+    private void gerarRelatorioReceitaLiquida() {
+        int userId = TokenStorage.getUserId();
+        String token = TokenStorage.getToken();
+
+        if (token == null || token.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Erro: Token de autenticação não encontrado.");
+            return;
+        }
+
+        if (userId <= 0) {
+            JOptionPane.showMessageDialog(this, "Erro: ID do usuário inválido.");
+            return;
+        }
+
+        String url = "http://localhost:8080/relatorios/excelReceitaLiquida?userId=" + userId;
+        try {
+            URL apiUrl = new URL(url);
+            HttpURLConnection conn = (HttpURLConnection) apiUrl.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                InputStream inputStream = conn.getInputStream();
+                if (inputStream == null) {
+                    JOptionPane.showMessageDialog(this, "Erro: Nenhum dado recebido da API.");
+                    return;
+                }
+
+                String filePath = "C:\\Users\\vinic\\OneDrive\\Importante\\excelTeste\\relatorio_receita_liquida.xlsx";
+
+                try (FileOutputStream fileOutputStream = new FileOutputStream(filePath)) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        fileOutputStream.write(buffer, 0, bytesRead);
+                    }
+                    inputStream.close();
+                    JOptionPane.showMessageDialog(this, "Relatório gerado com sucesso!");
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(this, "Erro ao salvar o arquivo: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                String errorResponse = br.readLine();
+                JOptionPane.showMessageDialog(this, "Erro ao gerar o relatório: " + errorResponse);
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao fazer a requisição para gerar o relatório.");
+            e.printStackTrace();
+        }
+    }
+
 
     public static void main(String[] args) {
         new Dashboard();
