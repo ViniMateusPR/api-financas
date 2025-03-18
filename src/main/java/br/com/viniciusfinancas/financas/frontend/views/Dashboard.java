@@ -6,14 +6,12 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.chart.renderer.category.BarRenderer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -28,7 +26,7 @@ public class Dashboard extends JFrame {
         setLayout(new BorderLayout());
 
         // Adicionando a label de boas-vindas
-        JLabel welcomeLabel = new JLabel("Bem-vindo ao seu Dashboard!" , SwingConstants.CENTER);
+        JLabel welcomeLabel = new JLabel("Bem-vindo ao seu Dashboard!", SwingConstants.CENTER);
         welcomeLabel.setFont(new Font("Arial", Font.PLAIN, 24));
         add(welcomeLabel, BorderLayout.NORTH);
 
@@ -51,15 +49,25 @@ public class Dashboard extends JFrame {
         // Criando o painel para os botões
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(despesaButton);
-        buttonPanel.add(receitaButton); // Adicionando o novo botão
+        buttonPanel.add(receitaButton); // Adicionando o botão "Acessar Receitas"
 
         add(buttonPanel, BorderLayout.SOUTH);
+
+        // Criando o painel para o botão de logout no canto superior direito
+        JPanel logoutPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton logoutButton = new JButton("Sair");
+        logoutButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        logoutPanel.add(logoutButton);
+        add(logoutPanel, BorderLayout.NORTH);
 
         // Ação do botão "Acessar Despesas"
         despesaButton.addActionListener(e -> abrirTelaDespesa());
 
         // Ação do botão "Acessar Receitas"
         receitaButton.addActionListener(e -> abrirTelaReceita());
+
+        // Ação do botão "Sair"
+        logoutButton.addActionListener(e -> logout());
 
         setVisible(true);
     }
@@ -71,6 +79,16 @@ public class Dashboard extends JFrame {
 
     private void abrirTelaReceita() {
         new ReceitaScreen();
+        dispose();
+    }
+
+    private void logout() {
+        // Limpar o token de autenticação e retornar para a tela de login
+        TokenStorage.clearToken();
+        TokenStorage.clearUserId();
+
+        // Redireciona para a tela de login (presumindo que você tenha uma classe LoginScreen)
+        new LoginPanel();
         dispose();
     }
 

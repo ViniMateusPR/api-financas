@@ -19,4 +19,13 @@ public class TokenStorage {
     public static int getUserId() {
         return userId;
     }
+
+    // Métodos para limpar o token e o userId
+    public static void clearToken() {
+        token = null;
+    }
+
+    public static void clearUserId() {
+        userId = 0;
+    }
 }

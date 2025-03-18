@@ -149,7 +149,6 @@ public class UserController {
                 .body("Receita criada com sucesso. Data: " + dataFormatada);
     }
 
-
     @GetMapping("/listarDespesas")
     public List<Despesa> listarDespesas(@RequestParam("userId") Long userId) {
         return despesaRepository.findByUsuarioId(userId);
@@ -159,7 +158,6 @@ public class UserController {
     public List<Receita> listarReceitas(@RequestParam("userId") Long userId){
         return receitaRepository.findReceitasByUsuarioId(userId);
     }
-
 
     @GetMapping("/id/{id}")
     public ResponseEntity<User> findByAll(@PathVariable Long id){
@@ -243,7 +241,6 @@ public class UserController {
                     .body("Erro ao excluir a receita: " + e.getMessage());
         }
     }
-
 
     @DeleteMapping("/deletarDespesa/{id}")
     public ResponseEntity<String> deletarDespesa(@PathVariable Long id){
